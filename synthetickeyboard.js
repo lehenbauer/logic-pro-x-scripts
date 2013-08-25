@@ -1,6 +1,11 @@
 // include file synthetickeyboard.js
 //
-// SyntheticKeyboard class
+// SyntheticKeyboard class - has methods to turn on and off synthetic keys,
+//   and to query to see if a synthetic key is on or not.
+//
+// Also the fetch and store methods provide a way for arbitrary stuff to
+//   be associated with a pitch (like the pitch of another key that the key
+//   was translated to)
 //
 //  define a SyntheticKeyboard object.
 //

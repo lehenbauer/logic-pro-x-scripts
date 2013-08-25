@@ -1,6 +1,13 @@
 // include file learner-class.js
 //
 // Copyright © 2013 Karl Lehenbauer.  All Rights Reserved.
+//   
+// Released to the public under the Berkeley copyright.
+//
+// Redistribution and use, with or without modification, is permitted
+// provided the copyright notice is maintained.
+//
+// see the LICENSE file for details
 //
 
 //

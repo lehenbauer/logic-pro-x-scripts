@@ -1,5 +1,7 @@
 // main script pitchcaster.js
 //
+// Killer Solos Pitchcaster
+//
 //
 
 NeedsTimingInfo = true;
@@ -21,17 +23,16 @@ function Reset() {
 Reset();
 
 function HandleMIDI(event) {
-	// if it's a note on and we're learning, learn it
 	if (event instanceof NoteOn) {
-		if (GetParameter('Learn')) {
+		// it's a note on. if we're learning, learn it
+		if (GetParameter('Mode') == 0) {
 			learner.learn(event.pitch);
-		}
-	}
 
-	// if we're not running, we're done, just send the event
-	if (!GetParameter('Run')) {
-		event.send();
-		return;
+			// since we're learning, we're done, just send
+			// the event
+			event.send();
+			return;
+		}
 	}
 
 	// if it's not a note on or note off, we're done
@@ -86,16 +87,19 @@ function ChangeIt() {
 function ParameterChanged(param, value) {
 	if (param == 0) {
 		if (value == 0) {
-			// if they turned off learner mode, generate the probability
-			// vector
+			learner.reset();
+		}
+
+		if (value == 1) {
+			// if they turned off learner mode (turned on run mode), 
+			// generate the probability vector
 			learner.genprobos();
 		}
 	}
 }
 
 var PluginParameters = [
-	{name:"Learn", type:'menu', valueStrings:["Off", "On"], defaultValue:1},
-	{name:"Run", type:'menu', valueStrings:["Off", "On"], defaultValue:0},
+	{name:"Mode", type:'menu', valueStrings:["Learn", "Run"], defaultValue:0},
 	{	name:'Change', type:'lin', unit:'percent', 
 		minValue:0, maxValue:100, numberOfSteps:100, defaultValue:50},
 ];

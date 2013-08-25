@@ -1,3 +1,17 @@
 for testing...
 
 js -f learner-class.txt  -i
+
+--
+
+setting up the IAC bus
+
+go to utilities > Audio MIDI Setup > Window > Show MIDI Window
+
+double click on IAC driver
+
+click on the checkbox Device is online
+
+Due to limitations in the scripter stuff, probably due to being the first release of the capability, it's hard to get the midi the scripter makes into a track.
+
+you need to inable the IAC driver 
