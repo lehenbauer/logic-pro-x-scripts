@@ -29,9 +29,9 @@
 //
 function Learner() {
 	this.keyboard = new Array(128);
-	this.reset();
-
 	this.probo = new ProbabilityVector();
+
+	this.reset();
 }
 
 Learner.prototype.reset = function() {
@@ -40,6 +40,8 @@ Learner.prototype.reset = function() {
 	}
 	this.notesLearned = 0;
 	this.uniqueNotesLearned = 0;
+	this.probo.reset();
+	Trace('learner object reset: ' + this);
 }
 
 // learn - learn a note
@@ -106,7 +108,7 @@ ProbabilityVector.prototype.reset = function () {
 
 // sum - get a note count of learned notes from the probability vector
 ProbabilityVector.prototype.sum = function () {
-	for (var i = 0, sum = 0; i < this.vector.length; i++) {
+	for (var i = 0, var sum = 0; i < this.vector.length; i++) {
 		sum += this.vector[i].count;
 	}
 	return (sum);
@@ -150,7 +152,7 @@ ProbabilityVector.prototype.pick_note = function () {
 
 logger = function (string1, string2) {
 	return;
-	s = new String();
+	var s = new String();
 
 	Trace(s.concat(string1, ":", string2));
 }
