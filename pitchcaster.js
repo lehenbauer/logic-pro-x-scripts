@@ -45,7 +45,7 @@ function HandleMIDI(event) {
 
 	// if in Learn or Standby or it's in Run but hasn't learned at least
 	// minNotesToLearn notes, send the event downstream and we're done
-	if ((mode === 0) || (mode === 1) || (learner.uniqueNotesLearned < minNotesToLearn)) {
+	if ((mode === 0) || (learner.uniqueNotesLearned < minNotesToLearn)) {
 		event.send();
 		return;
 	}
@@ -131,7 +131,7 @@ function ParameterChanged(param, value) {
 }
 
 var PluginParameters = [
-	{name:"Mode", type:'menu', valueStrings:["Learn", "Standby", "Run"], defaultValue:0},
+	{name:"Mode", type:'menu', valueStrings:["Learn", "Run"], defaultValue:0},
 	{	name:'Change', type:'lin', unit:'percent', 
 		minValue:0, maxValue:100, numberOfSteps:100, defaultValue:50},
 ];

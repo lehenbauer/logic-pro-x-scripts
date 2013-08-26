@@ -108,7 +108,8 @@ ProbabilityVector.prototype.reset = function () {
 
 // sum - get a note count of learned notes from the probability vector
 ProbabilityVector.prototype.sum = function () {
-	for (var i = 0, var sum = 0; i < this.vector.length; i++) {
+	var sum = 0;
+	for (var i = 0; i < this.vector.length; i++) {
 		sum += this.vector[i].count;
 	}
 	return (sum);
