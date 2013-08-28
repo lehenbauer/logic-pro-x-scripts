@@ -1,0 +1,366 @@
+// include file learner-class.js
+//
+// Copyright © 2013 Karl Lehenbauer.  All Rights Reserved.
+//   
+// Released to the public under the Berkeley copyright.
+//
+// Redistribution and use, with or without modification, is permitted
+// provided the copyright notice is maintained.
+//
+// see the LICENSE file for details
+//
+
+//
+// Learner class
+//
+// invoke learn method repeatedly with pitches and the Learner class will
+//  count them, learning what notes were struck and how often
+//
+// Creating an instance of the Learner class also instances an instance of
+//  the ProbabilityVector class, which Learner's genprobos method will load
+//  up with an object for each note played during the learning period, with
+//  the note numbers augmented by the count of that note and a ratio that
+//  is used for randomly picking notes with the same distribution.
+//
+//  the pick_note() method of the ProbabilityVector class, once the Learner
+//   and learned and its knowledge passed to the ProbabilityVector, will return
+//   random note numbers distributed at about the same rate as during the
+//   learning period.
+//
+function Learner() {
+	this.keyboard = new Array(128);
+	this.probo = new ProbabilityVector();
+
+	this.reset();
+}
+
+Learner.prototype.reset = function() {
+	for (var i = 1; i <= 128; i++) {
+		this.keyboard[i] = 0;
+	}
+	this.notesLearned = 0;
+	this.uniqueNotesLearned = 0;
+	this.probo.reset();
+	Trace('learner object reset: ' + this);
+}
+
+// learn - learn a note
+Learner.prototype.learn = function (pitch) {
+	if (this.keyboard[pitch] == 0) {
+		this.uniqueNotesLearned++;
+	}
+	this.keyboard[pitch]++;
+	this.notesLearned++;
+}
+
+// sum - calculate the number of notes learned
+Learner.prototype.sum = function () {
+	var sum = 0;
+	for (var i = 1; i <= 128; i++) {
+		sum += this.keyboard[i];
+	}
+	return(sum);
+}
+
+// genprobos - generate data into the probability vector
+Learner.prototype.genprobos = function () {
+	this.probo.reset();
+
+	// find all the keys that had notes played on them
+	// and stick them into the probability vector object
+	// we created when we were instantiated
+	for (var i = 1; i <= 128; i++) {
+		if (this.keyboard[i] == 0) {
+			continue;
+		}
+
+		this.probo.addprobo(i, this.keyboard[i]);
+	}
+
+	this.probo.calc_ratios();
+}
+
+// pick_note - helper function to simplify invoking the pick_note 
+// function of the probability ector
+Learner.prototype.pick_note = function () {
+	return this.probo.pick_note();
+}
+
+//
+// ProbabilityVector class
+//
+//  invoke addprobo method with note numbers and counts for each note
+//
+//  invoke calc_ratios() to prep it
+//
+//  invoke pick_note() to get note numbers
+//
+
+function ProbabilityVector() {
+	this.reset();
+}
+
+// reset - clear the probability vector
+ProbabilityVector.prototype.reset = function () {
+	this.vector = [];
+	this.sum = 0;
+}
+
+// sum - get a note count of learned notes from the probability vector
+ProbabilityVector.prototype.sum = function () {
+	var sum = 0;
+	for (var i = 0; i < this.vector.length; i++) {
+		sum += this.vector[i].count;
+	}
+	return (sum);
+}
+
+// create an object with a note and count and push it onto the vector
+ProbabilityVector.prototype.addprobo = function (note, count) {
+	var probo = new Object();
+
+	probo.note = note;
+	probo.count = count;
+	this.vector.push(probo);
+	this.sum += count;
+}
+
+// calc_ratios - run through each note object in the probability vector
+// and add a ratio element that transits 0.0 to 1.0
+// for each note's probability of being chosen
+ProbabilityVector.prototype.calc_ratios = function () {
+	var sofar = 0.0;
+
+	for (var i = 0; i < this.vector.length; i++) {
+		sofar += (this.vector[i].count / this.sum);
+		this.vector[i].ratio = sofar;
+	}
+}
+
+// pick_note - pick a note following the desired distribution
+ProbabilityVector.prototype.pick_note = function () {
+	var wantRatio = Math.random();
+
+	// logger('wantRatio', wantRatio);
+
+	for (var i = 0; i < this.vector.length; i++) {
+		// logger('this ratio', this.vector[i].ratio);
+		if (wantRatio < this.vector[i].ratio) {
+			return this.vector[i].note;
+		}
+	}
+}
+
+logger = function (string1, string2) {
+	return;
+	var s = new String();
+
+	Trace(s.concat(string1, ":", string2));
+}
+
+
+// vim: set ts=4 sw=4 sts=4 noet :
+
+if (0) {
+x = new ProbabilityVector();
+
+x.addprobo(60,1);
+x.addprobo(61,3);
+x.addprobo(65,5);
+x.addprobo(71,1);
+x.addprobo(73,6);
+x.addprobo(79,2);
+
+x.calc_ratios();
+}
+// include file synthetickeyboard.js
+//
+// SyntheticKeyboard class - has methods to turn on and off synthetic keys,
+//   and to query to see if a synthetic key is on or not.
+//
+// Also the fetch and store methods provide a way for arbitrary stuff to
+//   be associated with a pitch (like the pitch of another key that the key
+//   was translated to)
+//
+//  define a SyntheticKeyboard object.
+//
+//  Reset it with the reset method.
+//
+//  store a value for any pitch using store and fetch it using fetch.
+//
+//  the convenience functions note_on, note_off, and is_note_on are
+//  provided for common use.
+//
+function SyntheticKeyboard () {
+	this.keyboard = new Array(128);
+
+	this.reset();
+}
+
+SyntheticKeyboard.prototype.reset = function () {
+	for(var i = 1; i <= 128; i++) {
+		this.keyboard[i] = 0;
+	}
+}
+
+SyntheticKeyboard.prototype.store = function (pitch, value) {
+	this.keyboard[pitch] = value;
+}
+
+SyntheticKeyboard.prototype.fetch = function (pitch) {
+	return this.keyboard[pitch];
+}
+
+
+SyntheticKeyboard.prototype.note_on = function (pitch) {
+	this.store(pitch,1);
+}
+
+SyntheticKeyboard.prototype.note_off = function (pitch) {
+	this.store(pitch,0);
+}
+
+SyntheticKeyboard.prototype.is_note_on = function (pitch) {
+	return this.fetch(pitch);
+}
+
+
+// main script pitchcaster.js
+//
+// Killer Solos Pitchcaster
+//
+//
+
+NeedsTimingInfo = true;
+
+var noteCounter = 0;
+
+var minNotesToLearn = 4;
+
+var learner = new Learner();
+
+var syntheticKeyboard = new SyntheticKeyboard();
+
+var keyTranslations = new SyntheticKeyboard();
+
+function Reset() {
+	Trace('big Reset invoked');
+	syntheticKeyboard.reset();
+	keyTranslations.reset();
+}
+
+Reset();
+
+function HandleMIDI(event) {
+	var mode = GetParameter('Mode');
+
+	// if in learn mode and it's a note on, learn it.
+	// also if it's not in learn mode but it has learned less
+	//   than 4 notes, learn it
+	if (event instanceof NoteOn) {
+		if (mode === 0 || learner.uniqueNotesLearned < minNotesToLearn) {
+			learner.learn(event.pitch);
+
+			// if it's not in learn mode and it now knows minNotesToLearn notes,
+			// generate the probability vector
+			if (mode != 0 && learner.uniqueNotesLearned == minNotesToLearn) {
+				learner.genprobos();
+				Trace('generated probos due to minNotesToLearn');
+			}
+		}
+	}
+
+	// if in Learn or Standby or it's in Run but hasn't learned at least
+	// minNotesToLearn notes, send the event downstream and we're done
+	if ((mode === 0) || (learner.uniqueNotesLearned < minNotesToLearn)) {
+		event.send();
+		return;
+	}
+
+	// OK, we're in run mode.
+	// if it's not a note on or note off, send it along and we're done
+	if (!(event instanceof NoteOn) && !(event instanceof NoteOff)) {
+		event.send();
+		return;
+	}
+
+	// ok, we're running and we know it's a note on or note off.
+
+	if (event instanceof NoteOn) {
+		// decide if we are going to change the note
+		if (!ChangeIt()) {
+			var wantNote = event.pitch;
+			// logger('keep', wantNote);
+		} else {
+			var wantNote = learner.pick_note();
+			// logger('new', wantNote);
+		}
+
+		var success = 0;
+		for (var i = 0; i < 20; i++) {
+			if (!syntheticKeyboard.is_note_on(wantNote)) {
+				success = 1;
+				break;
+			}
+			wantNote = learner.pick_note();
+			// logger('repick', wantNote);
+		}
+
+		// if we tried and tried and never found a playable note, bail
+		// NB not sure about this
+		if (!success) {
+			return;
+		}
+
+		// we picked the note, keep track of the translation
+		syntheticKeyboard.note_on(wantNote);
+		keyTranslations.store(event.pitch, wantNote);
+
+		event.pitch = wantNote;
+		event.send();
+		return;
+	}
+
+	// ok it's a note off, translate it to what we translated it to,
+	// which may be the same as what we start with, send a note off
+	// for that, and clear the note on the synthetic keyboard
+	if (event instanceof NoteOff) {
+		// logger('>off',event.pitch);
+		var pitch = keyTranslations.fetch(event.pitch);
+		keyTranslations.store(event.pitch,0);
+		// logger('off',pitch);
+		event.pitch = pitch;
+		event.send();
+		syntheticKeyboard.note_off(pitch);
+	}
+}
+
+function ChangeIt() {
+	return (Math.random() < (GetParameter('Change') / 100.0));
+}
+
+function ParameterChanged(param, value) {
+	Trace('parameter ' + param + ' changed to ' + value);
+	if (param === 0) {
+		if (value === 0) {
+			learner.reset();
+		}
+
+		// if transitioned to standby or run, they might ended learn mode,
+		// generate the probably vector
+		if (value > 0) {
+			// if they turned off learner mode (turned on run mode), 
+			// generate the probability vector
+			learner.genprobos();
+			Trace('generated probos');
+		}
+	}
+}
+
+var PluginParameters = [
+	{name:"Mode", type:'menu', valueStrings:["Learn", "Run"], defaultValue:0},
+	{	name:'Change', type:'lin', unit:'percent', 
+		minValue:0, maxValue:100, numberOfSteps:100, defaultValue:50},
+];
+
+
