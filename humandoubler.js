@@ -10,6 +10,13 @@ function Reset() {
 }
 
 function HandleMIDI(event) {
+	// if it's not a note, don't randomize it, this can end up with
+	// pitches out of order, which leaves the last pitch not centered.
+	if (!event instanceof Note) {
+		event.send();
+		return;
+	]
+
 	var delay = GetParameter('Delay');
 	var wobble = GetParameter('Wobble');
 
