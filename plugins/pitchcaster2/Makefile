@@ -1,10 +1,9 @@
 
 include ../Makefile.inc
 
-RELEASEFILE=$(RELEASEDIR)/killersolos-pitchcaster.txt
-
-BLURB=pitchcaster-blurb.js
-PLUGIN=pitchcaster.js
+BLURB=pitchcaster2-blurb.js
+PLUGIN=pitchcaster2.js
+RELEASEFILE=$(RELEASEDIR)/killersolos-pitchcaster2.txt
 
 all:	$(RELEASEFILE)
 

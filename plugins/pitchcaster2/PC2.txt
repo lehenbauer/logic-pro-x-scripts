@@ -1,0 +1,13 @@
+
+
+normalize all input to a single octave
+
+above / below affinity 0 - 50 - 100
+
+octave range 1 2 3
+
+octave affinity 0 - 100
+
+
+
+
